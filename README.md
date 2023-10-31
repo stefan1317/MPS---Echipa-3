@@ -9,4 +9,4 @@ Cosmin, Team Lead-ul, este liderul tehnic al echipei. El supraveghează procesul
 Paul, membrul echipei responsabil cu testarea, se asigură că întregul sistem este supus unor teste riguroase. El identifică și raportează orice deficiențe pentru a asigura că produsul final este de calitate înaltă și fără erori.
 
 Echipa noastră lucrează în conformitate cu o metodologie de dezvoltare iterativă, permițându-ne să ajustăm și să îmbunătățim continuu componentele de binarizare globală și locală. Comunicarea deschisă și colaborarea eficientă sunt elemente cheie în reușita proiectului nostru. Cu această abordare, suntem pe drumul cel bun pentru a oferi un produs de succes la sfârșitul proiectului.
-![Gantt](https://github.com/stefan1317/MPS---Echipa-3/assets/73947936/b2be00e0-c61e-4d16-bebd-c3447bcd177d)
+![Gantt](https://github.com/stefan1317/MPS-Echipa-3/assets/73947936/e9833908-84f6-4fe4-8763-2373c9388108)
