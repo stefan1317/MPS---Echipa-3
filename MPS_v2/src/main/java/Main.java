@@ -21,6 +21,9 @@ public class Main {
         Map<Integer, List<Double>> globalTrain = csvReader.readDataFromCsv(GlobalTrain);
 
         GenerateTrees trees = new GenerateTrees(globalTrain);
-        System.out.println(trees.generateFirstTrees());
+        trees.generateFirstTrees();
+        trees.generateSecondTrees();
+        trees.generateFourthTrees();
+        trees.generateFifthTrees();
     }
 }

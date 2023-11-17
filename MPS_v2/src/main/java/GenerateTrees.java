@@ -203,22 +203,101 @@ public class GenerateTrees {
     }
 
     public double fourthEquation(ArrayList<Double> testValues) {
-        Set<Integer> usedValues = new HashSet<>();
         ArrayList<Double> firstEquationValues = new ArrayList<>();
         ArrayList<Double> secondEquationValues = new ArrayList<>();
         ArrayList<Double> thirdEquationValues = new ArrayList<>();
         ArrayList<Double> fourthEquationValues = new ArrayList<>();
 
+        double firstOp, secondOp, thirdOp, fourthOp, fifthOp, sixthOp,
+                seventhOp, eighthOp;
 
+        for (int i  = 0; i < 15; i++) {
+            if (i > 7 && i <= 12) {
+                firstEquationValues.add(testValues.get(i));
+            }
+        }
 
+        for (int i  = 0; i < 8; i++) {
+            if (i % 2 == 1) {
+                secondEquationValues.add(testValues.get(i));
+            }
+        }
+
+        thirdEquationValues.add(testValues.get(2));
+        thirdEquationValues.add(testValues.get(4));
+        thirdEquationValues.add(testValues.get(13));
+        thirdEquationValues.add(testValues.get(14));
+
+        firstOp = operations.prod(firstEquationValues);
+        secondOp = operations.min(secondEquationValues);
+        thirdOp = operations.add(testValues.get(0), testValues.get(14));
+        fourthOp = operations.geometricMean(thirdEquationValues);
+        fifthOp = operations.multiplyBy2(testValues.get(6));
+
+        fourthEquationValues.add(firstOp);
+        fourthEquationValues.add(fourthOp);
+        fourthEquationValues.add(fifthOp);
+
+        sixthOp = operations.max(fourthEquationValues);
+        seventhOp = operations.square(thirdOp);
+        eighthOp = operations.power(seventhOp, secondOp);
+
+        return operations.difDivSum(sixthOp, eighthOp);
+
+    }
+
+    public boolean isPrim(int n) {
+        if (n < 2) {
+            return false;
+        }
+        for (int i = 2; i <= Math.sqrt(n); i++) {
+            if (n % i == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public double fifthEquation(ArrayList<Double> testValues) {
+        ArrayList<Double> firstEquationValues = new ArrayList<>();
+        ArrayList<Double> secondEquationValues = new ArrayList<>();
+        ArrayList<Double> thirdEquationValues = new ArrayList<>();
+        ArrayList<Double> fourthEquationValues = new ArrayList<>();
 
         double firstOp, secondOp, thirdOp, fourthOp, fifthOp, sixthOp,
                 seventhOp, eighthOp, ninthOp;
 
+        for (int i  = 0; i < 15; i++) {
+            if (isPrim(i)) {
+                firstEquationValues.add(testValues.get(i));
+            }
+        }
 
-    }
+        for (int i  = 0; i < 15; i++) {
+            if (i % 3 == 0) {
+                secondEquationValues.add(testValues.get(i));
+            }
+        }
 
-    public double fifthEquation(ArrayList<Double> testValues) {
+        firstOp = operations.squareMean(firstEquationValues);
+        secondOp = operations.armonicMean(secondEquationValues);
+        thirdOp = operations.difDivSum(testValues.get(4), testValues.get(10));
+        fourthOp = operations.half(testValues.get(1));
+        fifthOp = operations.multiplyBy2(testValues.get(14));
+        sixthOp = operations.power(testValues.get(4), testValues.get(8));
 
+        thirdEquationValues.add(secondOp);
+        thirdEquationValues.add(thirdOp);
+        thirdEquationValues.add(fourthOp);
+
+        seventhOp = operations.max(thirdEquationValues);
+        eighthOp = operations.add(fifthOp, sixthOp);
+
+        fourthEquationValues.add(firstOp);
+        fourthEquationValues.add(seventhOp);
+        fourthEquationValues.add(eighthOp);
+        fourthEquationValues.add(secondOp);
+
+        return operations.prod(fourthEquationValues);
     }
 }

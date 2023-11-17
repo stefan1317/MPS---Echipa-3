@@ -66,7 +66,6 @@ public class Operations {
     }
 
     public double addHalf(double a) {
-        // a + a / 2 < 1
         return  a + a / 2 < 1 ? (a + a / 2) : a;
     }
 
