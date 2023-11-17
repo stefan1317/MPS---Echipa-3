@@ -11,7 +11,7 @@ public class Main {
             HashMap where the key is the number of the line (for each picture) and the value is a
             List where:
                 1) index 0 is the binarization threshold after applying the OtsuT algorithm
-                2) index 0 is the binarization threshold after applying the KittlerT algorithm
+                2) index 1 is the binarization threshold after applying the KittlerT algorithm
                 ... and so on.
          */
         Map<Integer, List<Double>> dataFromCsv = csvReader.readDataFromCsv(FILE_PATH);
