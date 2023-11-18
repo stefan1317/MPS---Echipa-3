@@ -1,11 +1,15 @@
-package main.java;
-
+import main.java.CsvReader;
 import java.util.List;
 import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
+
         CsvReader csvReader = new CsvReader();
+
+        //Gets file path from command line as argument
+//        String GlobalTrain = args[0];
+//        String LUTTrain = args[1];
 
         String GlobalTrain = "MPS_v2\\src\\main\\resources\\GlobalTrain.csv";
         String LUTTrain = "MPS_v2\\src\\main\\resources\\LUTTrain.csv";
@@ -20,10 +24,7 @@ public class Main {
         Map<Integer, List<Double>> lutTrain = csvReader.readDataFromCsv(LUTTrain);
         Map<Integer, List<Double>> globalTrain = csvReader.readDataFromCsv(GlobalTrain);
 
-        GenerateTrees trees = new GenerateTrees(globalTrain);
-        trees.generateFirstTrees();
-        trees.generateSecondTrees();
-        trees.generateFourthTrees();
-        trees.generateFifthTrees();
+        RunTrees runTrees = new RunTrees(globalTrain);
+        runTrees.runFirstTree();
     }
 }

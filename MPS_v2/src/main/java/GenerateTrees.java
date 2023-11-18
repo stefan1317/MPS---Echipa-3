@@ -1,56 +1,12 @@
-package main.java;
-
+import main.java.Operations;
 import java.util.*;
 
 public class GenerateTrees {
 
-    private Map<Integer, List<Double>> dataFromCsv;
     private Operations operations;
 
-    public GenerateTrees(Map<Integer, List<Double>> dataFromCsv) {
-        this.dataFromCsv = dataFromCsv;
+    public GenerateTrees() {
         operations = new Operations();
-    }
-
-    // I calculate the value of first tree for each row
-    public Map<Integer, Double> generateFirstTrees() {
-        Map<Integer, Double> values = new HashMap<>();
-        for (int i = 1; i < dataFromCsv.size(); i++) {
-            values.put(i, firstEquation((ArrayList<Double>) dataFromCsv.get(i)));
-        }
-        return values;
-    }
-
-    public Map<Integer, Double> generateSecondTrees() {
-        Map<Integer, Double> values = new HashMap<>();
-        for (int i = 1; i < dataFromCsv.size(); i++) {
-            values.put(i, secondEquation((ArrayList<Double>) dataFromCsv.get(i)));
-        }
-        return values;
-    }
-
-    public Map<Integer, Double> generateThirdTrees() {
-        Map<Integer, Double> values = new HashMap<>();
-        for (int i = 1; i < dataFromCsv.size(); i++) {
-            values.put(i, thirdEquation((ArrayList<Double>) dataFromCsv.get(i)));
-        }
-        return values;
-    }
-
-    public Map<Integer, Double> generateFourthTrees() {
-        Map<Integer, Double> values = new HashMap<>();
-        for (int i = 1; i < dataFromCsv.size(); i++) {
-            values.put(i, fourthEquation((ArrayList<Double>) dataFromCsv.get(i)));
-        }
-        return values;
-    }
-
-    public Map<Integer, Double> generateFifthTrees() {
-        Map<Integer, Double> values = new HashMap<>();
-        for (int i = 1; i < dataFromCsv.size(); i++) {
-            values.put(i, fifthEquation((ArrayList<Double>) dataFromCsv.get(i)));
-        }
-        return values;
     }
 
     public double firstEquation(ArrayList<Double> testValues) {
