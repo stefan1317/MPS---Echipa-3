@@ -52,7 +52,6 @@ public class GenerateTrees {
         log.info("First Tree | Calculate the root of the tree: maximum of two results");
         ArrayList<Double> fifthEquationValues = new ArrayList<>(Arrays.asList(sixthOp, seventhOp));
         return operations.max(fifthEquationValues);
-
     }
 
     public double secondEquation(ArrayList<Double> testValues) {
