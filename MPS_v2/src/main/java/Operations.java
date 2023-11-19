@@ -37,7 +37,7 @@ public class Operations {
         return Math.pow(geometricMean, 1.0 / testValues.size());
     }
 
-    public double armonicMean(ArrayList<Double> testValues) {
+    public double harmonicMean(ArrayList<Double> testValues) {
         double armonicMean = 0;
         for (double value : testValues) {
             armonicMean += 1 / value;

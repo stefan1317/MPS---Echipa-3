@@ -9,7 +9,7 @@ import java.util.function.Function;
 public class RunTrees {
 
     private Map<Integer, List<Double>> globalFile;
-    private GenerateTrees generateTrees;
+    private static GenerateTrees generateTrees;
 
     public RunTrees(Map<Integer, List<Double>> globalFile) {
         generateTrees = new GenerateTrees();
