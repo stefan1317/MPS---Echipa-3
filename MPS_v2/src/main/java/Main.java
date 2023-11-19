@@ -25,6 +25,6 @@ public class Main {
         Map<Integer, List<Double>> globalTrain = csvReader.readDataFromCsv(GlobalTrain);
 
         RunTrees runTrees = new RunTrees(globalTrain);
-        runTrees.runFirstTree();
+        runTrees.runFourthTree();
     }
 }

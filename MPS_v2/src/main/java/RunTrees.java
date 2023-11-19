@@ -9,20 +9,25 @@ import java.util.function.Function;
 public class RunTrees {
 
     private Map<Integer, List<Double>> globalFile;
+    private GenerateTrees generateTrees;
 
     public RunTrees(Map<Integer, List<Double>> globalFile) {
+        generateTrees = new GenerateTrees();
         this.globalFile = globalFile;
+    }
+
+    public int getNrCores() {
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.availableProcessors();
     }
 
     public void runFirstTree() {
 
         // get the number of cores to run the trees execution in parallel
-        Runtime runtime = Runtime.getRuntime();
-        int nrCores = runtime.availableProcessors();
+        int nrCores = getNrCores();
 
         AtomicInteger inQueue = new AtomicInteger(0);
         ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
-        GenerateTrees generateTrees = new GenerateTrees();
 
         // add each row as a task to run n trees in parallel
         for (int i = 1; i <= globalFile.size(); i++) {
@@ -34,13 +39,10 @@ public class RunTrees {
     public void runSecondTree() {
 
         // get the number of cores to run the trees execution in parallel
-        Runtime runtime = Runtime.getRuntime();
-        int nrCores = runtime.availableProcessors();
+        int nrCores = getNrCores();
 
         AtomicInteger inQueue = new AtomicInteger(0);
         ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        GenerateTrees generateTrees = new GenerateTrees();
-
 
         // add each row as a task to run n trees in parallel
         for (int i = 1; i <= globalFile.size(); i++) {
@@ -52,12 +54,10 @@ public class RunTrees {
     public void runThirdTree() {
 
         // get the number of cores to run the trees execution in parallel
-        Runtime runtime = Runtime.getRuntime();
-        int nrCores = runtime.availableProcessors();
+        int nrCores = getNrCores();
 
         AtomicInteger inQueue = new AtomicInteger(0);
         ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        GenerateTrees generateTrees = new GenerateTrees();
 
         // add each row as a task to run n trees in parallel
         for (int i = 1; i <= globalFile.size(); i++) {
@@ -69,12 +69,10 @@ public class RunTrees {
     public void runFourthTree() {
 
         // get the number of cores to run the trees execution in parallel
-        Runtime runtime = Runtime.getRuntime();
-        int nrCores = runtime.availableProcessors();
+        int nrCores = getNrCores();
 
         AtomicInteger inQueue = new AtomicInteger(0);
         ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        GenerateTrees generateTrees = new GenerateTrees();
 
         // add each row as a task to run n trees in parallel
         for (int i = 1; i <= globalFile.size(); i++) {
@@ -86,12 +84,10 @@ public class RunTrees {
     public void runFifthTree() {
 
         // get the number of cores to run the trees execution in parallel
-        Runtime runtime = Runtime.getRuntime();
-        int nrCores = runtime.availableProcessors();
+        int nrCores = getNrCores();
 
         AtomicInteger inQueue = new AtomicInteger(0);
         ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        GenerateTrees generateTrees = new GenerateTrees();
 
         // add each row as a task to run n trees in parallel
         for (int i = 1; i <= globalFile.size(); i++) {
