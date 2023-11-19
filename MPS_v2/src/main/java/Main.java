@@ -42,5 +42,6 @@ public class Main {
             log.error("Could not write to file");
             throw new RuntimeException(e);
         }
+        log.error("The complexity for the trees generation is O(n)");
     }
 }
