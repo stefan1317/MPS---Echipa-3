@@ -1,8 +1,15 @@
 import main.java.CsvReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 public class Main {
+
+    private static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
+
     public static void main(String[] args) {
 
         CsvReader csvReader = new CsvReader();
@@ -25,6 +32,15 @@ public class Main {
         Map<Integer, List<Double>> globalTrain = csvReader.readDataFromCsv(GlobalTrain);
 
         RunTrees runTrees = new RunTrees(globalTrain);
-        runTrees.runFirstTree();
+        try {
+            runTrees.runFirstTree();
+//            runTrees.runSecondTree();
+//            runTrees.runThirdTree();
+//            runTrees.runFourthTree();
+//            runTrees.runFifthTree();
+        } catch (IOException e) {
+            log.error("Could not write to file");
+            throw new RuntimeException(e);
+        }
     }
 }
