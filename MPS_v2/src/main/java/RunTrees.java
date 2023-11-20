@@ -14,7 +14,7 @@ import java.util.function.Function;
 public class RunTrees {
 
     private static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
-    private Map<Integer, List<Double>> globalFile;
+    private static Map<Integer, List<Double>> globalFile;
     private static GenerateTrees generateTrees;
 
     public RunTrees(Map<Integer, List<Double>> globalFile) {
@@ -121,12 +121,12 @@ public class RunTrees {
 
 class RunTree implements Runnable {
 
-    private static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
+    private final static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
     private ExecutorService tpe;
     private AtomicInteger inQueue;
-    private ArrayList<Double> testValues;
-    Function<ArrayList<Double>, Double> treeEquation;
-    private int row;
+    private final ArrayList<Double> testValues;
+    private final Function<ArrayList<Double>, Double> treeEquation;
+    private final int row;
     private final FileWriter fWriter;
 
     public RunTree(ExecutorService tpe, AtomicInteger inQueue, ArrayList<Double> testValues,
