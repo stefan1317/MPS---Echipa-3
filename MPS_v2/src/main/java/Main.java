@@ -44,12 +44,16 @@ public class Main {
         }
         log.info("The complexity for the trees generation is O(n)");
         
-        main.java.Testing test =  new main.java.Testing();
-        Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FirstTree");
-        Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\SecondTree");
-        Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\ThirdTree");
-        Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FourthTree");
-        Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FifthTree");
-        Testing.printAveragesAboveMean();
+        Testing test =  new Testing();
+        try {
+            Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FirstTree");
+            Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\SecondTree");
+            Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\ThirdTree");
+            Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FourthTree");
+            Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FifthTree");
+            Testing.printAveragesAboveMean();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
