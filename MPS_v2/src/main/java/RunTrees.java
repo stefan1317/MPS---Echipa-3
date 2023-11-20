@@ -1,5 +1,6 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class RunTrees {
         return runtime.availableProcessors();
     }
 
-    public void runFirstTree() throws IOException{
+    public void runFirstTree() throws IOException {
 
         // get the number of cores to run the trees execution in parallel
         int nrCores = getNrCores();
@@ -40,12 +41,12 @@ public class RunTrees {
         for (int i = 1; i <= globalFile.size(); i++) {
             inQueue.incrementAndGet();
             tpe.submit(new RunTree(tpe, inQueue, (ArrayList<Double>) globalFile.get(i),
-                    generateTrees::firstEquation, i,fWriter));
+                    generateTrees::firstEquation, i, fWriter));
         }
 
     }
 
-    public void runSecondTree() throws IOException{
+    public void runSecondTree() throws IOException {
 
         // get the number of cores to run the trees execution in parallel
         int nrCores = getNrCores();
@@ -63,7 +64,7 @@ public class RunTrees {
         }
     }
 
-    public void runThirdTree() throws IOException{
+    public void runThirdTree() throws IOException {
 
         // get the number of cores to run the trees execution in parallel
         int nrCores = getNrCores();
@@ -81,7 +82,7 @@ public class RunTrees {
         }
     }
 
-    public void runFourthTree() throws IOException{
+    public void runFourthTree() throws IOException {
 
         // get the number of cores to run the trees execution in parallel
         int nrCores = getNrCores();
@@ -99,7 +100,7 @@ public class RunTrees {
         }
     }
 
-    public void runFifthTree() throws IOException{
+    public void runFifthTree() throws IOException {
 
         // get the number of cores to run the trees execution in parallel
         int nrCores = getNrCores();
@@ -126,7 +127,7 @@ class RunTree implements Runnable {
     private ArrayList<Double> testValues;
     Function<ArrayList<Double>, Double> treeEquation;
     private int row;
-    private FileWriter fWriter;
+    private final FileWriter fWriter;
 
     public RunTree(ExecutorService tpe, AtomicInteger inQueue, ArrayList<Double> testValues,
                    Function<ArrayList<Double>, Double> treeEquation, int row, FileWriter fWriter) {
@@ -142,20 +143,17 @@ class RunTree implements Runnable {
     public void run() {
         double value = treeEquation.apply(testValues);
         try {
-            fWriter.append(row + " " + value + "\n");
-        } catch (IOException e) {
-            log.error("Can not write to file");
-            throw new RuntimeException(e);
-        }
-        int left = inQueue.decrementAndGet();
-        if (left == 0) {
-            try {
-                fWriter.close();
-            } catch (IOException e) {
-                log.error("Can not close file");
-                throw new RuntimeException(e);
+            synchronized (fWriter) {
+                fWriter.append(row + " " + value + "\n");
             }
-            tpe.shutdown();
+            int left = inQueue.decrementAndGet();
+            if (left == 0) {
+                fWriter.close();
+                tpe.shutdown();
+            }
+        } catch (IOException e) {
+            log.error("Can not write or close file");
+            throw new RuntimeException(e);
         }
     }
 }
