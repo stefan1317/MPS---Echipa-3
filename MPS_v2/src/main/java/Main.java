@@ -33,15 +33,15 @@ public class Main {
 
         RunTrees runTrees = new RunTrees(globalTrain);
         try {
-            runTrees.runFirstTree();
+//            runTrees.runFirstTree();
 //            runTrees.runSecondTree();
-//            runTrees.runThirdTree();
+            runTrees.runThirdTree();
 //            runTrees.runFourthTree();
 //            runTrees.runFifthTree();
         } catch (IOException e) {
             log.error("Could not write to file");
             throw new RuntimeException(e);
         }
-        log.error("The complexity for the trees generation is O(n)");
+        log.info("The complexity for the trees generation is O(n)");
     }
 }

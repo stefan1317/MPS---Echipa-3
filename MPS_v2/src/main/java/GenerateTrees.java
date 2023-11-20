@@ -124,7 +124,7 @@ public class GenerateTrees {
         int randomValue3 = random.nextInt(15);
         int randomValue4 = random.nextInt(15);
         int randomValue5 = random.nextInt(15);
-        Set<Integer> usedValues = new HashSet<>(Set.of(randomValue1, randomValue2, randomValue3,
+        Set<Integer> usedValues = new HashSet<>(Arrays.asList(randomValue1, randomValue2, randomValue3,
                 randomValue4, randomValue5));
 
         log.info("Third Tree | Calculate the mean of a random 5 values from the dataset");
