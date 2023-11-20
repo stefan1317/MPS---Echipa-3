@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class Testing
 {
@@ -14,35 +16,40 @@ public class Testing
         Map<Integer, Double> globalTrain = readGlobalTrainData(path);
         processGlobalTrain(globalTrain);
 
-        // Presupunem că ai funcția csvReader.readDataFromCsv() deja definită și funcțională
-        String LUTTrain = "MPS_v2\\src\\main\\resources\\LUTTrain.csv";
+        String LUTTrain = "MPS_v2\\src\\main\\resources\\LuTTrain.csv";
         main.java.CsvReader csvReader = new main.java.CsvReader();
         Map<Integer, List<Double>> lutTrain = csvReader.readDataFromCsv(LUTTrain);
 
         List<Double> foundValues = new ArrayList<>();
+
 
         for (Map.Entry<Integer, Double> entry : globalTrain.entrySet()) {
             int key = entry.getKey();
             double value = entry.getValue();
             if (lutTrain.containsKey(key)) {
                 List<Double> lutValues = lutTrain.get(key);
-                if (lutValues.contains(value)) {
-                    System.out.println("Valoarea " + value + " găsită pentru cheia " + key);
-                    foundValues.add(value);
+                int index = (int) value - 1;
+                if (index >= 0 && index < lutValues.size()) {
+                    double foundValue = lutValues.get(index);
+                    foundValues.add(foundValue);
                 }
             }
         }
 
-        // Calcularea mediei aritmetice
+        Path path_object = Paths.get(path);
+
+        String fileName = path_object.getFileName().toString();
+
         if (!foundValues.isEmpty()) {
             double sum = 0;
             for (double foundValue : foundValues) {
                 sum += foundValue;
             }
             double average = sum / foundValues.size();
-            System.out.println("Media aritmetică a valorilor găsite este: " + average);
+
+            System.out.println("The score for the file " + fileName + " is: " + average);
         } else {
-            System.out.println("Nu s-au găsit valori pentru calcularea mediei.");
+            System.out.println("A score could not be calculated for the file " + fileName);
         }
     }
 
