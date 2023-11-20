@@ -12,6 +12,23 @@ import java.nio.file.Paths;
 
 public class Testing
 {
+    private static Map<String, Double> fileAverages = new HashMap<>();
+
+    public static void printAveragesAboveMean() {
+        if (fileAverages.isEmpty()) {
+            System.out.println("No scores available.");
+            return;
+        }
+
+        double overallMean = fileAverages.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+
+        System.out.println("\nThe files that will be kept are:\n");
+        for (Map.Entry<String, Double> entry : fileAverages.entrySet()) {
+            if (entry.getValue() > overallMean) {
+                System.out.println("File: " + entry.getKey() + ", Average: " + entry.getValue());
+            }
+        }
+    }
     public static void CheckOptimization(String path) throws IOException {
         Map<Integer, Double> globalTrain = readGlobalTrainData(path);
         processGlobalTrain(globalTrain);
@@ -46,6 +63,7 @@ public class Testing
                 sum += foundValue;
             }
             double average = sum / foundValues.size();
+            fileAverages.put(fileName, average);
 
             System.out.println("The score for the file " + fileName + " is: " + average);
         } else {
@@ -74,5 +92,4 @@ public class Testing
         }
     }
 }
-
 
