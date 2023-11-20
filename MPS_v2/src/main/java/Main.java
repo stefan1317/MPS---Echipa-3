@@ -50,5 +50,6 @@ public class Main {
         Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\ThirdTree");
         Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FourthTree");
         Testing.CheckOptimization("MPS_v2\\src\\main\\resources\\FifthTree");
+        Testing.printAveragesAboveMean();
     }
 }
