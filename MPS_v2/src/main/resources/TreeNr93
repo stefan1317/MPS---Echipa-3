@@ -1,0 +1,5 @@
+mean 3 square 1 power 2 mean 3 half 1 
+square 1 multiplyBy2 1 addHalf 1 half 1 addHalf 1 
+addHalf 1 difDivSum 2 difDivSum 2 
+square 1 add 2 
+difDivSum 2 

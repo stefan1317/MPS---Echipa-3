@@ -1,0 +1,4 @@
+addHalf 1 min 4 addHalf 1 square 1 geometricMean 3 
+square 1 geometricMean 3 multiplyBy2 1 
+multiplyBy2 1 difDivSum 2 
+power 2 

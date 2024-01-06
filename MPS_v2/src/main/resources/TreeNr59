@@ -1,0 +1,7 @@
+geometricMean 3 difDivSum 2 square 1 difDivSum 2 difDivSum 2 
+multiplyBy2 1 multiplyBy2 1 geometricMean 3 
+half 1 power 2 
+multiplyBy2 1 square 1 
+square 1 half 1 
+multiplyBy2 1 addHalf 1 
+add 2 

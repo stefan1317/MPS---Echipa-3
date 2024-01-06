@@ -1,0 +1,7 @@
+max 5 half 1 max 4 
+square 1 difDivSum 2 
+multiplyBy2 1 half 1 
+multiplyBy2 1 square 1 
+addHalf 1 square 1 
+addHalf 1 square 1 
+add 2 

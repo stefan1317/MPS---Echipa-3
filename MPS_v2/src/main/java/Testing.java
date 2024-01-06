@@ -1,18 +1,77 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class Testing
-{
+public class Testing {
+
+    public int getNrCores() {
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.availableProcessors();
+    }
+
+    public void check() {
+        int nrCores = getNrCores();
+
+        AtomicInteger inQueue = new AtomicInteger(0);
+        ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
+
+        for (int i = 1; i <= 100; i++) {
+            inQueue.incrementAndGet();
+            tpe.submit(new ProcessFile(tpe, inQueue, i));
+        }
+    }
+
+
+}
+
+class ProcessFile implements Runnable {
+
+    private final static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
+    private ExecutorService tpe;
+    private AtomicInteger inQueue;
+    private int indexFile;
     private static Map<String, Double> fileAverages = new HashMap<>();
 
-    public static void printAveragesAboveMean() {
+
+    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue,
+                       int indexFile) {
+        this.tpe = tpe;
+        this.inQueue = inQueue;
+        this.indexFile = indexFile;
+    }
+
+    @Override
+    public void run() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(
+                    "MPS_v2\\src\\main\\resources\\TreeNr" + indexFile + "Values"));
+            checkOptimization(reader, "MPS_v2\\src\\main\\resources\\TreeNr" + indexFile);
+            int left = inQueue.decrementAndGet();
+            if (left == 0) {
+                reader.close();
+                tpe.shutdown();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public void printAveragesAboveMean() {
         if (fileAverages.isEmpty()) {
             System.out.println("No scores available.");
             return;
@@ -27,13 +86,14 @@ public class Testing
             }
         }
     }
-    public static void CheckOptimization(String path) throws IOException {
-        Map<Integer, Double> globalTrain = readGlobalTrainData(path);
+
+    public void checkOptimization(BufferedReader reader, String pathName) throws IOException {
+        Map<Integer, Double> globalTrain = readGlobalTrainData(reader);
         processGlobalTrain(globalTrain);
 
-        String LUTTrain = "MPS_v2\\src\\main\\resources\\LuTTrain.csv";
+        String LUTTest = "MPS_v2\\src\\main\\resources\\LuTTest.csv";
         main.java.CsvReader csvReader = new main.java.CsvReader();
-        Map<Integer, List<Double>> lutTrain = csvReader.readDataFromCsv(LUTTrain);
+        Map<Integer, List<Double>> lutTrain = csvReader.readDataFromCsv(LUTTest);
 
         List<Double> foundValues = new ArrayList<>();
 
@@ -51,7 +111,7 @@ public class Testing
             }
         }
 
-        Path path_object = Paths.get(path);
+        Path path_object = Paths.get(pathName);
 
         String fileName = path_object.getFileName().toString();
 
@@ -69,16 +129,14 @@ public class Testing
         }
     }
 
-    public static Map<Integer, Double> readGlobalTrainData(String filePath) throws IOException {
+    public Map<Integer, Double> readGlobalTrainData(BufferedReader reader) throws IOException {
         Map<Integer, Double> map = new HashMap<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(" ");
-                int key = Integer.parseInt(parts[0]);
-                double value = Double.parseDouble(parts[1]);
-                map.put(key, value);
-            }
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] parts = line.split(" ");
+            int key = Integer.parseInt(parts[0]);
+            double value = Double.parseDouble(parts[1]);
+            map.put(key, value);
         }
         return map;
     }

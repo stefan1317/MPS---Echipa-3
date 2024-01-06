@@ -1,0 +1,7 @@
+squareMean 5 half 1 squareMean 3 half 1 
+min 3 square 1 
+half 1 addHalf 1 
+addHalf 1 multiplyBy2 1 
+addHalf 1 multiplyBy2 1 
+multiplyBy2 1 addHalf 1 
+difDivSum 2 
