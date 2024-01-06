@@ -1,0 +1,10 @@
+geometricMean 3 add 2 addHalf 1 half 1 difDivSum 2 half 1 
+square 1 addHalf 1 multiply 3 multiplyBy2 1 
+multiplyBy2 1 power 2 half 1 
+add 2 addHalf 1 
+multiplyBy2 1 addHalf 1 
+half 1 addHalf 1 
+square 1 addHalf 1 
+half 1 square 1 
+addHalf 1 addHalf 1 
+power 2 

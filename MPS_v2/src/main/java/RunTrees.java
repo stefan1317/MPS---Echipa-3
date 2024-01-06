@@ -1,11 +1,14 @@
+import main.java.Operations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,97 +30,53 @@ public class RunTrees {
         return runtime.availableProcessors();
     }
 
-    public void runFirstTree() throws IOException {
+    public void generateTrees() throws IOException, InvocationTargetException,
+            NoSuchMethodException, IllegalAccessException {
 
         // get the number of cores to run the trees execution in parallel
         int nrCores = getNrCores();
 
         AtomicInteger inQueue = new AtomicInteger(0);
         ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
-        FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\FirstTree");
 
-        log.info("Running first tree");
-        // add each row as a task to run n trees in parallel
-        for (int i = 1; i <= globalFile.size(); i++) {
+        log.info("Generating trees...");
+
+        // generate 100 trees in parallel
+        for (int i = 1; i <= 100; i++) {
             inQueue.incrementAndGet();
-            tpe.submit(new RunTree(tpe, inQueue, (ArrayList<Double>) globalFile.get(i),
-                    generateTrees::firstEquation, i, fWriter));
+            ArrayList<Double> testValues = new ArrayList<>();
+            testValues.addAll(globalFile.get(1));
+            tpe.submit(new GenerateTree(tpe, inQueue, testValues, i, generateTrees));
         }
 
     }
 
-    public void runSecondTree() throws IOException {
+    public void runTrees() throws IOException {
 
         // get the number of cores to run the trees execution in parallel
         int nrCores = getNrCores();
 
+        log.info("Running trees with pixels values...");
         AtomicInteger inQueue = new AtomicInteger(0);
-        ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\SecondTree");
+        ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
 
-        log.info("Running second tree");
-        // add each row as a task to run n trees in parallel
-        for (int i = 1; i <= globalFile.size(); i++) {
-            inQueue.incrementAndGet();
-            tpe.submit(new RunTree(tpe, inQueue, (ArrayList<Double>) globalFile.get(i),
-                    generateTrees::secondEquation, i, fWriter));
+        // add each row as a task to run a tree with all dataset values in parallel
+        for (int i = 1; i <= 100; i++) {
+            FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\TreeNr"
+                    + i + "Values");
+
+            for (int j = 1; j <= globalFile.size(); j++) {
+                inQueue.incrementAndGet();
+                ArrayList<Double> testValues = new ArrayList<>();
+                testValues.addAll(globalFile.get(j));
+                tpe.submit(new RunTree(tpe, inQueue, testValues,
+                        i, j, fWriter));
+            }
         }
-    }
-
-    public void runThirdTree() throws IOException {
-
-        // get the number of cores to run the trees execution in parallel
-        int nrCores = getNrCores();
-
-        AtomicInteger inQueue = new AtomicInteger(0);
-        ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\ThirdTree");
-
-        log.info("Running third tree");
-        // add each row as a task to run n trees in parallel
-        for (int i = 1; i <= globalFile.size(); i++) {
-            inQueue.incrementAndGet();
-            tpe.submit(new RunTree(tpe, inQueue, (ArrayList<Double>) globalFile.get(i),
-                    generateTrees::thirdEquation, i, fWriter));
-        }
-    }
-
-    public void runFourthTree() throws IOException {
-
-        // get the number of cores to run the trees execution in parallel
-        int nrCores = getNrCores();
-
-        AtomicInteger inQueue = new AtomicInteger(0);
-        ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\FourthTree");
-
-        log.info("Running fourth tree");
-        // add each row as a task to run n trees in parallel
-        for (int i = 1; i <= globalFile.size(); i++) {
-            inQueue.incrementAndGet();
-            tpe.submit(new RunTree(tpe, inQueue, (ArrayList<Double>) globalFile.get(i),
-                    generateTrees::fourthEquation, i, fWriter));
-        }
-    }
-
-    public void runFifthTree() throws IOException {
-
-        // get the number of cores to run the trees execution in parallel
-        int nrCores = getNrCores();
-
-        AtomicInteger inQueue = new AtomicInteger(0);
-        ExecutorService tpe = Executors.newFixedThreadPool(nrCores - 1);
-        FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\FifthTree");
-
-        log.info("Running fifth tree");
-        // add each row as a task to run n trees in parallel
-        for (int i = 1; i <= globalFile.size(); i++) {
-            inQueue.incrementAndGet();
-            tpe.submit(new RunTree(tpe, inQueue, (ArrayList<Double>) globalFile.get(i),
-                    generateTrees::fifthEquation, i, fWriter));
-        }
+        tpe.shutdown();
     }
 }
+
 
 class RunTree implements Runnable {
 
@@ -125,35 +84,114 @@ class RunTree implements Runnable {
     private ExecutorService tpe;
     private AtomicInteger inQueue;
     private final ArrayList<Double> testValues;
-    private final Function<ArrayList<Double>, Double> treeEquation;
     private final int row;
+    private final int fileIndex;
     private final FileWriter fWriter;
 
     public RunTree(ExecutorService tpe, AtomicInteger inQueue, ArrayList<Double> testValues,
-                   Function<ArrayList<Double>, Double> treeEquation, int row, FileWriter fWriter) {
+                   int fileIndex, int row, FileWriter fWriter) {
         this.tpe = tpe;
         this.inQueue = inQueue;
         this.testValues = testValues;
-        this.treeEquation = treeEquation;
+        this.fileIndex = fileIndex;
         this.row = row;
         this.fWriter = fWriter;
     }
 
+    public double applyFunction(int nrArgs, ArrayList<Double> args, String function)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        if (nrArgs == 1) {
+            Class<?> cls = Operations.class;
+            Method method = cls.getMethod(function, double.class);
+            return (double) method.invoke(new Operations(), args.get(0));
+        } else if (nrArgs == 2) {
+            Class<?> cls = Operations.class;
+            Method method = cls.getMethod(function, double.class, double.class);
+            return (double) method.invoke(new Operations(), args.get(0), args.get(1));
+        } else {
+            Class<?> cls = Operations.class;
+            Method method = cls.getMethod(function, ArrayList.class);
+            return (double) method.invoke(new Operations(), args);
+        }
+    }
+
+    public double calculateTreeValue(BufferedReader reader) throws IOException,
+            InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        String line;
+        Random random = new Random();
+        ArrayList<Double> currentLevel = new ArrayList<>();
+        currentLevel.addAll(testValues);
+        ArrayList<Double> newLevel = new ArrayList<>();
+        while ((line = reader.readLine()) != null) {
+            newLevel.clear();
+            String[] tokens = line.split(" ");
+
+            for (int i = 0; i < tokens.length; i += 2) {
+                int nrArgs = Integer.parseInt(tokens[i + 1]);
+                ArrayList<Double> args = new ArrayList<>();
+                for (int j = 0; j < nrArgs; j++) {
+                    args.add(currentLevel.remove(random.nextInt(currentLevel.size())));
+                }
+                newLevel.add(applyFunction(nrArgs, args, tokens[i]));
+            }
+            currentLevel.addAll(newLevel);
+        }
+        return newLevel.get(0);
+    }
+
     @Override
     public void run() {
-        double value = treeEquation.apply(testValues);
         try {
+            BufferedReader reader = new BufferedReader(new FileReader(
+                    "MPS_v2\\src\\main\\resources\\TreeNr" + fileIndex));
+            double value = calculateTreeValue(reader);
             synchronized (fWriter) {
                 fWriter.append(row + " " + value + "\n");
             }
             int left = inQueue.decrementAndGet();
             if (left == 0) {
+                reader.close();
                 fWriter.close();
-                tpe.shutdown();
             }
-        } catch (IOException e) {
-            log.error("Can not write or close file");
+        } catch (IOException | InvocationTargetException
+                 | NoSuchMethodException | IllegalAccessException e) {
+            log.error("Can not write, read or close a file or wrong call of a function");
             throw new RuntimeException(e);
+        }
+    }
+}
+
+
+class GenerateTree implements Runnable {
+
+    private final static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
+    private ExecutorService tpe;
+    private AtomicInteger inQueue;
+    private final ArrayList<Double> testValues;
+    private int indexFile;
+    private GenerateTrees generateTrees;
+
+
+    public GenerateTree(ExecutorService tpe, AtomicInteger inQueue, ArrayList<Double> testValues,
+                        int indexFile, GenerateTrees generateTrees) {
+        this.tpe = tpe;
+        this.inQueue = inQueue;
+        this.testValues = testValues;
+        this.indexFile = indexFile;
+        this.generateTrees = generateTrees;
+    }
+
+    @Override
+    public void run() {
+        try {
+            generateTrees.generateTree(testValues, indexFile);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                 | IOException e) {
+            log.error("Error while generating tree");
+        }
+        int left = inQueue.decrementAndGet();
+        if (left == 0) {
+            tpe.shutdown();
         }
     }
 }
