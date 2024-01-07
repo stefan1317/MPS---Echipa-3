@@ -47,8 +47,7 @@ class ProcessFile implements Runnable {
     private static Map<String, Double> fileAverages = new HashMap<>();
 
 
-    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue,
-                       int indexFile) {
+    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile) {
         this.tpe = tpe;
         this.inQueue = inQueue;
         this.indexFile = indexFile;
@@ -68,6 +67,7 @@ class ProcessFile implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        printAveragesAboveMean();
     }
 
 
@@ -78,14 +78,47 @@ class ProcessFile implements Runnable {
         }
 
         double overallMean = fileAverages.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        
+        Map<String, Double> filteredAverages = fileAverages.entrySet().stream()
+                .filter(entry -> entry.getValue() > overallMean)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        System.out.println("\nThe files that will be kept are:\n");
-        for (Map.Entry<String, Double> entry : fileAverages.entrySet()) {
-            if (entry.getValue() > overallMean) {
+        Map<String, Double> sortedAverages = filteredAverages.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+        System.out.println("\nThe top 10 files with the highest scores above the mean are:\n");
+        int count = 0;
+        List<String> top10Files = new ArrayList<>();
+        for (Map.Entry<String, Double> entry : sortedAboveMeanAverages.entrySet()) {
+            try {
+                Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValues() + "Values");
+                System.out.println("File " + entry.getKey() + " has been deleted.");
+            } catch (IOException e) {
+                System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
+            }
+
+            if (count < 10) {
                 System.out.println("File: " + entry.getKey() + ", Average: " + entry.getValue());
+                top10Files.add(entry.getKey());
+                count++;
+            } else {
+                break;
+            }
+        }
+
+        for (Map.Entry<String, Double> entry : aboveMeanAverages.entrySet()) {
+            if (!top10Files.contains(entry.getKey())) {
+                try {
+                    Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValues());
+                    System.out.println("File " + entry.getKey() + " has been deleted.");
+                } catch (IOException e) {
+                    System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
+                }
             }
         }
     }
+
 
     public void checkOptimization(BufferedReader reader, String pathName) throws IOException {
         Map<Integer, Double> globalTrain = readGlobalTrainData(reader);
