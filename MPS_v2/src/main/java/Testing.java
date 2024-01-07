@@ -18,6 +18,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Testing {
 
+    public Map<String, Double> sortedAverages = new HashMap<>();
+    public List<String> top10Files = new ArrayList<>();
+
+    public void setSortedAveragesAndTop10Files(Map<String, Double> sortedAverages, List<String> top10Files) {
+        this.sortedAverages = sortedAverages;
+        this.top10Files = top10Files;
+    }
+
     public int getNrCores() {
         Runtime runtime = Runtime.getRuntime();
         return runtime.availableProcessors();
@@ -33,8 +41,28 @@ public class Testing {
             inQueue.incrementAndGet();
             tpe.submit(new ProcessFile(tpe, inQueue, i));
         }
+
+        deleteFiles(sortedAverages, top10Files);
     }
 
+    public void deleteFiles(Map<String, Double> sortedAverages, List<String> top10Files) {
+        for (Map.Entry<String, Double> entry : sortedAverages.entrySet()) {
+            try {
+                Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue() + "Values");
+                System.out.println("File " + entry.getKey() + " has been deleted.");
+            } catch (IOException e) {
+                System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
+            }
+            if (!top10Files.contains(entry.getKey())) {
+                try {
+                    Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue());
+                    System.out.println("File " + entry.getKey() + " has been deleted.");
+                } catch (IOException e) {
+                    System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
+                }
+            }
+        }
+    }
 
 }
 
@@ -51,6 +79,14 @@ class ProcessFile implements Runnable {
         this.tpe = tpe;
         this.inQueue = inQueue;
         this.indexFile = indexFile;
+    }
+
+    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile, Map<String, Double> sortedAverages, List<String> top10Files) {
+        this.tpe = tpe;
+        this.inQueue = inQueue;
+        this.indexFile = indexFile;
+        this.sortedAverages = sortedAverages;
+        this.top10Files = top10Files;
     }
 
     @Override
@@ -90,14 +126,7 @@ class ProcessFile implements Runnable {
         System.out.println("\nThe top 10 files with the highest scores above the mean are:\n");
         int count = 0;
         List<String> top10Files = new ArrayList<>();
-        for (Map.Entry<String, Double> entry : sortedAboveMeanAverages.entrySet()) {
-            try {
-                Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValues() + "Values");
-                System.out.println("File " + entry.getKey() + " has been deleted.");
-            } catch (IOException e) {
-                System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
-            }
-
+        for (Map.Entry<String, Double> entry : sortedAverages.entrySet()) {
             if (count < 10) {
                 System.out.println("File: " + entry.getKey() + ", Average: " + entry.getValue());
                 top10Files.add(entry.getKey());
@@ -106,17 +135,8 @@ class ProcessFile implements Runnable {
                 break;
             }
         }
+        ((Testing) Thread.currentThread()).setSortedAveragesAndTop10Files(sortedAverages, top10Files);
 
-        for (Map.Entry<String, Double> entry : aboveMeanAverages.entrySet()) {
-            if (!top10Files.contains(entry.getKey())) {
-                try {
-                    Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValues());
-                    System.out.println("File " + entry.getKey() + " has been deleted.");
-                } catch (IOException e) {
-                    System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
-                }
-            }
-        }
     }
 
 
