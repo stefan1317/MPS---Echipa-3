@@ -2,7 +2,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -40,6 +39,7 @@ public class RunTreesLocal {
             inQueuePixel.incrementAndGet();
             tpePixel.submit(new RunTreeLocal(tpePixel, inQueuePixel, treePath, pixel, groundTruths));
         }
+        while(!tpePixel.isShutdown()) {}
         return groundTruths;
     }
 }
@@ -122,7 +122,6 @@ class RunTreeLocal implements Runnable {
                 }
             }
             int left = inQueue.decrementAndGet();
-//            System.out.println(left);
             if (left == 0) {
                 tpe.shutdown();
                 reader.close();

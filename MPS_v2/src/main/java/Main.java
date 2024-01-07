@@ -2,9 +2,11 @@ import main.java.CsvReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +45,7 @@ public class Main {
 
 //        GenerateTrees generateTrees = new GenerateTrees(globalTest);
 //        RunTrees runTrees = new RunTrees(globalTest);
-
+//
 //        try {
 //            generateTrees.generateTrees();
 //            runTrees.runTrees();
@@ -61,27 +63,44 @@ public class Main {
 //        testing.check();
 
         int nrCores = RunTrees.getNrCores();
+        Map<String, Double> treesFMeasures = new HashMap<>();
         log.info("Processing csv files in parallel...");
-        AtomicInteger inQueue = new AtomicInteger(0);
-        ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
-        ArrayList<GroundTruth> groundTruths = new ArrayList<>();
-
-        int i = 0;
 
         for (String treePath : treeFiles) {
+
+            AtomicInteger inQueue = new AtomicInteger(0);
+            ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
+            ArrayList<GroundTruth> groundTruths = new ArrayList<>();
+
+            int i = 0;
+
             for (Map.Entry<String, ArrayList<Pixel>> entry : csvFilesData.entrySet()) {
                 i++;
-                if (i > 1)
-                    break;
+                if (i > 5) {break;}
                 inQueue.incrementAndGet();
-                tpe.submit(new ProcessCsvFiles(tpe, inQueue, treePath, entry.getValue(), groundTruths));
+                tpe.submit(new ProcessCsvFiles(tpe, inQueue, treePath,
+                        entry.getValue(), groundTruths));
             }
-            while (!tpe.isShutdown()) {
-
+            while (!tpe.isShutdown()) {}
+            ArrayList<Double> fMeasures = new ArrayList<>();
+            for (GroundTruth groundTruth : groundTruths) {
+                double fMeasure = groundTruth.truePositive / (groundTruth.truePositive + 0.5 *
+                        (groundTruth.falsePositive + groundTruth.falseNegative));
+                fMeasures.add(fMeasure);
             }
-            System.out.println(groundTruths.get(0).falsePositive);
+            treesFMeasures.put(treePath, new main.java.Operations().mean(fMeasures));
+        }
+        try {
+            FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\FMeasures");
+            for (Map.Entry<String, Double> entry : treesFMeasures.entrySet()) {
+                fWriter.append(entry.getKey()).append(" ").append(entry.getValue().toString()).append("\n");
+            }
+            fWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
+        System.out.println(treesFMeasures);
     }
 
 

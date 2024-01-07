@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 public class Testing {
 
-    public Map<String, Double> sortedAverages = new HashMap<>();
     public List<String> top10Files = new ArrayList<>();
 
     public int getNrCores() {
@@ -30,26 +29,30 @@ public class Testing {
 
         AtomicInteger inQueue = new AtomicInteger(0);
         ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
+        Map<String, Double> fileAverages = new HashMap<>();
 
         for (int i = 1; i <= 100; i++) {
             inQueue.incrementAndGet();
-            tpe.submit(new ProcessFile(tpe, inQueue, i));
+            tpe.submit(new ProcessFile(tpe, inQueue, i, fileAverages));
         }
+        while (!tpe.isShutdown()) {
 
-        deleteFiles(sortedAverages, top10Files);
+        }
+        printAveragesAboveMean(fileAverages);
+        deleteFiles(fileAverages, top10Files);
     }
 
     public void deleteFiles(Map<String, Double> sortedAverages, List<String> top10Files) {
         for (Map.Entry<String, Double> entry : sortedAverages.entrySet()) {
             try {
-                Files.deleteIfExists(Paths.get("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue() + "Values"));
+                Files.deleteIfExists(Paths.get(entry.getKey() + "Values"));
                 System.out.println("File " + entry.getKey() + " has been deleted.");
             } catch (IOException e) {
                 System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
             }
             if (!top10Files.contains(entry.getKey())) {
                 try {
-                    Files.deleteIfExists(Paths.get("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue()));
+                    Files.deleteIfExists(Paths.get(entry.getKey()));
                     System.out.println("File " + entry.getKey() + " has been deleted.");
                 } catch (IOException e) {
                     System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
@@ -58,52 +61,7 @@ public class Testing {
         }
     }
 
-}
-
-class ProcessFile implements Runnable {
-
-    private final static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
-    private ExecutorService tpe;
-    private AtomicInteger inQueue;
-    private int indexFile;
-    private static Map<String, Double> fileAverages = new HashMap<>();
-    private Map<String, Double> sortedAverages;
-    private List<String> top10Files;
-
-
-    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile) {
-        this.tpe = tpe;
-        this.inQueue = inQueue;
-        this.indexFile = indexFile;
-    }
-
-//    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile, Map<String, Double> sortedAverages, List<String> top10Files) {
-//        this.tpe = tpe;
-//        this.inQueue = inQueue;
-//        this.indexFile = indexFile;
-//        this.sortedAverages = sortedAverages;
-//        this.top10Files = top10Files;
-//    }
-
-    @Override
-    public void run() {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(
-                    "MPS_v2\\src\\main\\resources\\TreeNr" + indexFile + "Values"));
-            checkOptimization(reader, "MPS_v2\\src\\main\\resources\\TreeNr" + indexFile);
-            int left = inQueue.decrementAndGet();
-            if (left == 0) {
-                reader.close();
-                tpe.shutdown();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        printAveragesAboveMean();
-    }
-
-
-    public void printAveragesAboveMean() {
+    public void printAveragesAboveMean(Map<String, Double> fileAverages) {
         if (fileAverages.isEmpty()) {
             System.out.println("No scores available.");
             return;
@@ -131,17 +89,50 @@ class ProcessFile implements Runnable {
                 break;
             }
         }
-        setSortedAveragesAndTop10Files(sortedAverages, top10Files);
+        setSortedAveragesAndTop10Files(top10Files);
 
     }
 
-    public void setSortedAveragesAndTop10Files(Map<String, Double> sortedAverages, List<String> top10Files) {
-        this.sortedAverages = sortedAverages;
+    public void setSortedAveragesAndTop10Files(List<String> top10Files) {
         this.top10Files = top10Files;
     }
 
-    public void checkOptimization(BufferedReader reader, String pathName) throws IOException {
-        Map<Integer, Double> globalTrain = readGlobalTrainData(reader);
+}
+
+class ProcessFile implements Runnable {
+
+    private final static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
+    private ExecutorService tpe;
+    private AtomicInteger inQueue;
+    private int indexFile;
+    private static Map<String, Double> fileAverages;
+
+
+    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile,
+                       Map<String, Double> fileAverages) {
+        this.tpe = tpe;
+        this.inQueue = inQueue;
+        this.indexFile = indexFile;
+        this.fileAverages = fileAverages;
+    }
+
+
+    @Override
+    public void run() {
+        try {
+            checkOptimization("MPS_v2\\src\\main\\resources\\TreeNr" + indexFile);
+            int left = inQueue.decrementAndGet();
+            if (left == 0) {
+                tpe.shutdown();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public void checkOptimization(String pathName) throws IOException {
+        Map<Integer, Double> globalTrain = readGlobalTrainData();
         processGlobalTrain(globalTrain);
 
         String LUTTest = "MPS_v2\\src\\main\\resources\\LuTTest.csv";
@@ -164,9 +155,9 @@ class ProcessFile implements Runnable {
             }
         }
 
-        Path path_object = Paths.get(pathName);
-
-        String fileName = path_object.getFileName().toString();
+//        Path path_object = Paths.get(pathName);
+//
+//        String fileName = path_object.getFileName().toString();
 
         if (!foundValues.isEmpty()) {
             double sum = 0;
@@ -174,15 +165,19 @@ class ProcessFile implements Runnable {
                 sum += foundValue;
             }
             double average = sum / foundValues.size();
-            fileAverages.put(fileName, average);
+            synchronized (fileAverages) {
+                fileAverages.put(pathName, average);
+            }
 
-            System.out.println("The score for the file " + fileName + " is: " + average);
+            System.out.println("The score for the file " + pathName + " is: " + average);
         } else {
-            System.out.println("A score could not be calculated for the file " + fileName);
+            System.out.println("A score could not be calculated for the file " + pathName);
         }
     }
 
-    public Map<Integer, Double> readGlobalTrainData(BufferedReader reader) throws IOException {
+    public Map<Integer, Double> readGlobalTrainData() throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(
+                "MPS_v2\\src\\main\\resources\\TreeNr" + indexFile + "Values"));
         Map<Integer, Double> map = new HashMap<>();
         String line;
         while ((line = reader.readLine()) != null) {
@@ -191,6 +186,7 @@ class ProcessFile implements Runnable {
             double value = Double.parseDouble(parts[1]);
             map.put(key, value);
         }
+        reader.close();
         return map;
     }
 

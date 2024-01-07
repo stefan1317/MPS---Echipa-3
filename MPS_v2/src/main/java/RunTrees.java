@@ -34,14 +34,14 @@ public class RunTrees {
         int nrCores = getNrCores();
 
         log.info("Running trees with pixels values...");
-        AtomicInteger inQueue = new AtomicInteger(0);
-        ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
 
         // add each row as a task to run a tree with all dataset values in parallel
         for (int i = 1; i <= 100; i++) {
             FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\TreeNr"
                     + i + "Values");
 
+            AtomicInteger inQueue = new AtomicInteger(0);
+            ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
             for (int j = 1; j <= globalFile.size(); j++) {
                 inQueue.incrementAndGet();
                 ArrayList<Double> testValues = new ArrayList<>();
@@ -49,8 +49,10 @@ public class RunTrees {
                 tpe.submit(new RunTree(tpe, inQueue, testValues,
                         i, j, fWriter));
             }
+            while (!tpe.isShutdown()) {
+
+            }
         }
-        tpe.shutdown();
     }
 }
 
@@ -129,6 +131,7 @@ class RunTree implements Runnable {
             if (left == 0) {
                 reader.close();
                 fWriter.close();
+                tpe.shutdown();
             }
         } catch (IOException | InvocationTargetException
                  | NoSuchMethodException | IllegalAccessException e) {

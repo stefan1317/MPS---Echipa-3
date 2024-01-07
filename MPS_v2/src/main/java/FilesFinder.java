@@ -19,15 +19,10 @@ public class FilesFinder {
 
             if (treeFiles != null) {
                 for (File treeFile : treeFiles) {
-                    if (treeFile.isDirectory() || treeFile.getName().contains("Values")
-                            || treeFile.getName().contains(".csv")) {
+                    if (treeFile.isDirectory() || !treeFile.getName().contains("TreeNr")) {
                         continue;
                     }
-                    //TODO
-                    if (treeFile.getName().equals("TreeNr1")) {
-//                        System.out.println("nu");
                     treeFilesPaths.add(treeFile.getAbsolutePath());
-                    }
                 }
                 return treeFilesPaths;
             } else {
