@@ -6,25 +6,19 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.util.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Testing {
 
     public Map<String, Double> sortedAverages = new HashMap<>();
     public List<String> top10Files = new ArrayList<>();
-
-    public void setSortedAveragesAndTop10Files(Map<String, Double> sortedAverages, List<String> top10Files) {
-        this.sortedAverages = sortedAverages;
-        this.top10Files = top10Files;
-    }
 
     public int getNrCores() {
         Runtime runtime = Runtime.getRuntime();
@@ -48,14 +42,14 @@ public class Testing {
     public void deleteFiles(Map<String, Double> sortedAverages, List<String> top10Files) {
         for (Map.Entry<String, Double> entry : sortedAverages.entrySet()) {
             try {
-                Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue() + "Values");
+                Files.deleteIfExists(Paths.get("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue() + "Values"));
                 System.out.println("File " + entry.getKey() + " has been deleted.");
             } catch (IOException e) {
                 System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
             }
             if (!top10Files.contains(entry.getKey())) {
                 try {
-                    Files.deleteIfExists("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue());
+                    Files.deleteIfExists(Paths.get("MPS_v2\\src\\main\\resources\\TreeNr" + entry.getValue()));
                     System.out.println("File " + entry.getKey() + " has been deleted.");
                 } catch (IOException e) {
                     System.out.println("Unable to delete file " + entry.getKey() + ": " + e.getMessage());
@@ -73,6 +67,8 @@ class ProcessFile implements Runnable {
     private AtomicInteger inQueue;
     private int indexFile;
     private static Map<String, Double> fileAverages = new HashMap<>();
+    private Map<String, Double> sortedAverages;
+    private List<String> top10Files;
 
 
     public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile) {
@@ -81,13 +77,13 @@ class ProcessFile implements Runnable {
         this.indexFile = indexFile;
     }
 
-    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile, Map<String, Double> sortedAverages, List<String> top10Files) {
-        this.tpe = tpe;
-        this.inQueue = inQueue;
-        this.indexFile = indexFile;
-        this.sortedAverages = sortedAverages;
-        this.top10Files = top10Files;
-    }
+//    public ProcessFile(ExecutorService tpe, AtomicInteger inQueue, int indexFile, Map<String, Double> sortedAverages, List<String> top10Files) {
+//        this.tpe = tpe;
+//        this.inQueue = inQueue;
+//        this.indexFile = indexFile;
+//        this.sortedAverages = sortedAverages;
+//        this.top10Files = top10Files;
+//    }
 
     @Override
     public void run() {
@@ -114,7 +110,7 @@ class ProcessFile implements Runnable {
         }
 
         double overallMean = fileAverages.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
-        
+
         Map<String, Double> filteredAverages = fileAverages.entrySet().stream()
                 .filter(entry -> entry.getValue() > overallMean)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -135,10 +131,14 @@ class ProcessFile implements Runnable {
                 break;
             }
         }
-        ((Testing) Thread.currentThread()).setSortedAveragesAndTop10Files(sortedAverages, top10Files);
+        setSortedAveragesAndTop10Files(sortedAverages, top10Files);
 
     }
 
+    public void setSortedAveragesAndTop10Files(Map<String, Double> sortedAverages, List<String> top10Files) {
+        this.sortedAverages = sortedAverages;
+        this.top10Files = top10Files;
+    }
 
     public void checkOptimization(BufferedReader reader, String pathName) throws IOException {
         Map<Integer, Double> globalTrain = readGlobalTrainData(reader);

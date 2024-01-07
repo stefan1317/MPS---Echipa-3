@@ -1,4 +1,0 @@
-mean 5 addHalf 1 add 2 addHalf 1 square 1 
-square 1 power 2 addHalf 1 multiplyBy2 1 
-multiplyBy2 1 square 1 addHalf 1 multiplyBy2 1 
-harmonicMean 4 

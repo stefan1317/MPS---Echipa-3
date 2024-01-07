@@ -1,6 +1,0 @@
-mean 3 max 3 square 1 half 1 square 1 addHalf 1 
-addHalf 1 half 1 add 2 half 1 multiplyBy2 1 
-addHalf 1 geometricMean 4 
-multiplyBy2 1 multiplyBy2 1 
-multiplyBy2 1 square 1 
-power 2 

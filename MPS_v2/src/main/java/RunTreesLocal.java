@@ -1,94 +1,81 @@
-import main.java.Operations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
-public class RunTrees {
+class GroundTruth {
+    public int truePositive;
+    public int falsePositive;
+    public int trueNegative;
+    public int falseNegative;
+}
 
-    private static Logger log = LoggerFactory.getLogger(RunTrees.class);
-    private static Map<Integer, List<Double>> globalFile;
+public class RunTreesLocal {
 
-    public RunTrees(Map<Integer, List<Double>> globalFile) {
-        this.globalFile = globalFile;
-    }
+    private static Logger log = LoggerFactory.getLogger(RunTreesLocal.class);
 
-    public static int getNrCores() {
+    public int getNrCores() {
         Runtime runtime = Runtime.getRuntime();
         return runtime.availableProcessors();
     }
 
-    public void runTrees() throws IOException {
-
-        // get the number of cores to run the trees execution in parallel
+    public GroundTruth runTreesLocal(String treePath, ArrayList<Pixel> image) {
         int nrCores = getNrCores();
 
         log.info("Running trees with pixels values...");
-        AtomicInteger inQueue = new AtomicInteger(0);
-        ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
+        AtomicInteger inQueuePixel = new AtomicInteger(0);
+        ExecutorService tpePixel = Executors.newFixedThreadPool(nrCores);
+        GroundTruth groundTruths = new GroundTruth();
 
-        // add each row as a task to run a tree with all dataset values in parallel
-        for (int i = 1; i <= 100; i++) {
-            FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\TreeNr"
-                    + i + "Values");
-
-            for (int j = 1; j <= globalFile.size(); j++) {
-                inQueue.incrementAndGet();
-                ArrayList<Double> testValues = new ArrayList<>();
-                testValues.addAll(globalFile.get(j));
-                tpe.submit(new RunTree(tpe, inQueue, testValues,
-                        i, j, fWriter));
-            }
+        for (Pixel pixel : image) {
+            inQueuePixel.incrementAndGet();
+            tpePixel.submit(new RunTreeLocal(tpePixel, inQueuePixel, treePath, pixel, groundTruths));
         }
-        tpe.shutdown();
+        return groundTruths;
     }
 }
 
-
-class RunTree implements Runnable {
+class RunTreeLocal implements Runnable {
 
     private final static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
     private ExecutorService tpe;
     private AtomicInteger inQueue;
-    private final ArrayList<Double> testValues;
-    private final int row;
-    private final int fileIndex;
-    private final FileWriter fWriter;
+    private final String treePath;
+    private final Pixel pixel;
+    private final GroundTruth groundTruths;
 
-    public RunTree(ExecutorService tpe, AtomicInteger inQueue, ArrayList<Double> testValues,
-                   int fileIndex, int row, FileWriter fWriter) {
+    public RunTreeLocal(ExecutorService tpe, AtomicInteger inQueue, String treePath,
+                        Pixel pixel, GroundTruth groundTruths) {
         this.tpe = tpe;
         this.inQueue = inQueue;
-        this.testValues = testValues;
-        this.fileIndex = fileIndex;
-        this.row = row;
-        this.fWriter = fWriter;
+        this.treePath = treePath;
+        this.pixel = pixel;
+        this.groundTruths = groundTruths;
     }
 
     public double applyFunction(int nrArgs, ArrayList<Double> args, String function)
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         if (nrArgs == 1) {
-            Class<?> cls = Operations.class;
+            Class<?> cls = main.java.Operations.class;
             Method method = cls.getMethod(function, double.class);
-            return (double) method.invoke(new Operations(), args.get(0));
+            return (double) method.invoke(new main.java.Operations(), args.get(0));
         } else if (nrArgs == 2) {
-            Class<?> cls = Operations.class;
+            Class<?> cls = main.java.Operations.class;
             Method method = cls.getMethod(function, double.class, double.class);
-            return (double) method.invoke(new Operations(), args.get(0), args.get(1));
+            return (double) method.invoke(new main.java.Operations(), args.get(0), args.get(1));
         } else {
-            Class<?> cls = Operations.class;
+            Class<?> cls = main.java.Operations.class;
             Method method = cls.getMethod(function, ArrayList.class);
-            return (double) method.invoke(new Operations(), args);
+            return (double) method.invoke(new main.java.Operations(), args);
         }
     }
 
@@ -97,7 +84,7 @@ class RunTree implements Runnable {
         String line;
         Random random = new Random();
         ArrayList<Double> currentLevel = new ArrayList<>();
-        currentLevel.addAll(testValues);
+        currentLevel.addAll(pixel.pixelMap);
         ArrayList<Double> newLevel = new ArrayList<>();
         while ((line = reader.readLine()) != null) {
             newLevel.clear();
@@ -119,16 +106,26 @@ class RunTree implements Runnable {
     @Override
     public void run() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(
-                    "MPS_v2\\src\\main\\resources\\TreeNr" + fileIndex));
+            BufferedReader reader = new BufferedReader(new FileReader(treePath));
             double value = calculateTreeValue(reader);
-            synchronized (fWriter) {
-                fWriter.append(row + " " + value + "\n");
+            int color = (pixel.value > value) ? 1 : 0;
+
+            synchronized (groundTruths) {
+                if (pixel.groundTruth == 1 && pixel.groundTruth == color) {
+                    groundTruths.truePositive++;
+                } else if (pixel.groundTruth == 1 && pixel.groundTruth != color) {
+                    groundTruths.falsePositive++;
+                } else if (pixel.groundTruth == 0 && pixel.groundTruth == color) {
+                    groundTruths.trueNegative++;
+                } else {
+                    groundTruths.falseNegative++;
+                }
             }
             int left = inQueue.decrementAndGet();
+//            System.out.println(left);
             if (left == 0) {
+                tpe.shutdown();
                 reader.close();
-                fWriter.close();
             }
         } catch (IOException | InvocationTargetException
                  | NoSuchMethodException | IllegalAccessException e) {

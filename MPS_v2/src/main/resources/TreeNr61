@@ -1,7 +1,0 @@
-addHalf 1 add 2 geometricMean 3 harmonicMean 4 
-difDivSum 2 power 2 
-square 1 half 1 
-half 1 addHalf 1 
-multiplyBy2 1 square 1 
-multiplyBy2 1 half 1 
-power 2 

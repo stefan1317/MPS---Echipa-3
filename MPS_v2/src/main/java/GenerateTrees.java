@@ -6,14 +6,20 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GenerateTrees {
 
     private static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
     private Operations operations;
+    private static Map<Integer, List<Double>> globalFile;
 
-    public GenerateTrees() {
+
+    public GenerateTrees(Map<Integer, List<Double>> globalFile) {
         operations = new Operations();
+        this.globalFile = globalFile;
     }
 
     public double applyFunction(int nrArgs, ArrayList<Double> args, FileWriter fWriter)
@@ -72,5 +78,65 @@ public class GenerateTrees {
             fWriter.append("\n");
         }
         fWriter.close();
+    }
+
+    public int getNrCores() {
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.availableProcessors();
+    }
+
+    public void generateTrees() throws IOException, InvocationTargetException,
+            NoSuchMethodException, IllegalAccessException {
+
+        // get the number of cores to run the trees execution in parallel
+        int nrCores = getNrCores();
+
+        AtomicInteger inQueue = new AtomicInteger(0);
+        ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
+
+        log.info("Generating trees...");
+
+        // generate 100 trees in parallel
+        for (int i = 1; i <= 100; i++) {
+            inQueue.incrementAndGet();
+            ArrayList<Double> testValues = new ArrayList<>();
+            testValues.addAll(globalFile.get(1));
+            tpe.submit(new GenerateTree(tpe, inQueue, testValues, i, new GenerateTrees(globalFile)));
+        }
+
+    }
+}
+
+class GenerateTree implements Runnable {
+
+    private final static Logger log = LoggerFactory.getLogger(GenerateTrees.class);
+    private ExecutorService tpe;
+    private AtomicInteger inQueue;
+    private final ArrayList<Double> testValues;
+    private int indexFile;
+    private GenerateTrees generateTrees;
+
+
+    public GenerateTree(ExecutorService tpe, AtomicInteger inQueue, ArrayList<Double> testValues,
+                        int indexFile, GenerateTrees generateTrees) {
+        this.tpe = tpe;
+        this.inQueue = inQueue;
+        this.testValues = testValues;
+        this.indexFile = indexFile;
+        this.generateTrees = generateTrees;
+    }
+
+    @Override
+    public void run() {
+        try {
+            generateTrees.generateTree(testValues, indexFile);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                 | IOException e) {
+            log.error("Error while generating tree");
+        }
+        int left = inQueue.decrementAndGet();
+        if (left == 0) {
+            tpe.shutdown();
+        }
     }
 }
