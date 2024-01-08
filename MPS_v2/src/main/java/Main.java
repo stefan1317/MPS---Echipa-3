@@ -72,11 +72,11 @@ public class Main {
             ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
             ArrayList<GroundTruth> groundTruths = new ArrayList<>();
 
-            int i = 0;
+            int nrFiles = 0;
 
             for (Map.Entry<String, ArrayList<Pixel>> entry : csvFilesData.entrySet()) {
-                i++;
-                if (i > 100) {break;}
+                nrFiles++;
+                if (nrFiles > 100) {break;}
                 inQueue.incrementAndGet();
                 tpe.submit(new ProcessCsvFiles(tpe, inQueue, treePath,
                         entry.getValue(), groundTruths));
