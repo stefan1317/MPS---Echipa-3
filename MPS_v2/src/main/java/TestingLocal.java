@@ -1,12 +1,12 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TestingLocal {
     public void checkLocal() {
-        String filePath = "MPS_v2\\src\\main\\resources\\FMeasures.txt";
+        String filePath = "MPS_v2\\src\\main\\resources\\FMeasures";
 
         Map<String, Double> treeData = new HashMap<>();
 
@@ -25,7 +25,9 @@ public class TestingLocal {
         }
 
         List<Map.Entry<String, Double>> sortedEntries = new ArrayList<>(treeData.entrySet());
-        sortedEntries.sort(Comparator.comparing(Map.Entry::getValue));
+//        sortedEntries.sort(Comparator.comparing(Map.Entry::getValue).reversed());
+        sortedEntries.sort(Comparator.comparing(Map.Entry<String, Double>::getValue).reversed());
+
 
         System.out.println("\nThe best three trees are:\n");
         int count = 0;

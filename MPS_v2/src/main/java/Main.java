@@ -62,47 +62,42 @@ public class Main {
 //        Testing testing = new Testing();
 //        testing.check();
 
-        int nrCores = RunTrees.getNrCores();
-        Map<String, Double> treesFMeasures = new HashMap<>();
-        log.info("Processing csv files in parallel...");
-
-        for (String treePath : treeFiles) {
-
-            AtomicInteger inQueue = new AtomicInteger(0);
-            ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
-            ArrayList<GroundTruth> groundTruths = new ArrayList<>();
-
-            int nrFiles = 0;
-
-            for (Map.Entry<String, ArrayList<Pixel>> entry : csvFilesData.entrySet()) {
-                nrFiles++;
-                if (nrFiles > 100) {break;}
-                inQueue.incrementAndGet();
-                tpe.submit(new ProcessCsvFiles(tpe, inQueue, treePath,
-                        entry.getValue(), groundTruths));
-            }
-            while (!tpe.isShutdown()) {}
-            ArrayList<Double> fMeasures = new ArrayList<>();
-            for (GroundTruth groundTruth : groundTruths) {
-                double fMeasure = groundTruth.truePositive / (groundTruth.truePositive + 0.5 *
-                        (groundTruth.falsePositive + groundTruth.falseNegative));
-                fMeasures.add(fMeasure);
-            }
-            treesFMeasures.put(treePath, new main.java.Operations().mean(fMeasures));
-        }
-        try {
-            FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\FMeasures");
-            for (Map.Entry<String, Double> entry : treesFMeasures.entrySet()) {
-                fWriter.append(entry.getKey()).append(" ").append(entry.getValue().toString()).append("\n");
-            }
-            fWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        System.out.println(treesFMeasures);
+//        int nrCores = RunTrees.getNrCores();
+//        Map<String, Double> treesFMeasures = new HashMap<>();
+//        log.info("Processing csv files in parallel...");
+//
+//        for (String treePath : treeFiles) {
+//
+//            AtomicInteger inQueue = new AtomicInteger(0);
+//            ExecutorService tpe = Executors.newFixedThreadPool(nrCores);
+//            ArrayList<GroundTruth> groundTruths = new ArrayList<>();
+//
+//            for (Map.Entry<String, ArrayList<Pixel>> entry : csvFilesData.entrySet()) {
+//                inQueue.incrementAndGet();
+//                tpe.submit(new ProcessCsvFiles(tpe, inQueue, treePath,
+//                        entry.getValue(), groundTruths));
+//            }
+//            while (!tpe.isShutdown()) {}
+//            ArrayList<Double> fMeasures = new ArrayList<>();
+//            for (GroundTruth groundTruth : groundTruths) {
+//                double fMeasure = groundTruth.truePositive / (groundTruth.truePositive + 0.5 *
+//                        (groundTruth.falsePositive + groundTruth.falseNegative));
+//                fMeasures.add(fMeasure);
+//            }
+//            treesFMeasures.put(treePath, new main.java.Operations().mean(fMeasures));
+//        }
+//        try {
+//            FileWriter fWriter = new FileWriter("MPS_v2\\src\\main\\resources\\FMeasures");
+//            for (Map.Entry<String, Double> entry : treesFMeasures.entrySet()) {
+//                fWriter.append(entry.getKey()).append(" ").append(entry.getValue().toString()).append("\n");
+//            }
+//            fWriter.close();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+        TestingLocal local = new TestingLocal();
+        local.checkLocal();
     }
-
 
 }
 
