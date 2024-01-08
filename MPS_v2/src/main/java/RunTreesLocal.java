@@ -30,7 +30,7 @@ public class RunTreesLocal {
     public GroundTruth runTreesLocal(String treePath, ArrayList<Pixel> image) {
         int nrCores = getNrCores();
 
-        log.info("Running trees with pixels values...");
+        log.info("Running trees with pixels values - tree path: " + treePath);
         AtomicInteger inQueuePixel = new AtomicInteger(0);
         ExecutorService tpePixel = Executors.newFixedThreadPool(nrCores);
         GroundTruth groundTruths = new GroundTruth();

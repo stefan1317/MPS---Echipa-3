@@ -76,7 +76,7 @@ public class Main {
 
             for (Map.Entry<String, ArrayList<Pixel>> entry : csvFilesData.entrySet()) {
                 i++;
-                if (i > 5) {break;}
+                if (i > 100) {break;}
                 inQueue.incrementAndGet();
                 tpe.submit(new ProcessCsvFiles(tpe, inQueue, treePath,
                         entry.getValue(), groundTruths));
